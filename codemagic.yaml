@@ -15,13 +15,41 @@ workflows:
           echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
       - name: Fix Flutter Gradle Plugin Application
         script: |
-          # Update the app build.gradle file to use the declarative plugin syntax
+          # Update both build.gradle and settings.gradle files
           cd "$CM_BUILD_DIR/android"
-          if grep -q "apply from" app/build.gradle; then
-            # Replace apply from with the plugins block
-            sed -i.bak 's/apply from: "$flutterRoot\/packages\/flutter_tools\/gradle\/flutter.gradle"//' app/build.gradle
+          
+          # Fix app/build.gradle
+          if grep -q "apply from:.*flutter.gradle" app/build.gradle; then
+            echo "Updating app/build.gradle to use declarative plugin syntax"
+            # Remove the old apply from line
+            sed -i.bak 's/apply from: ".*flutter.gradle"//' app/build.gradle
+            # Add the Flutter plugin to plugins block
             sed -i.bak '/plugins {/a\\    id "dev.flutter.flutter-gradle-plugin"' app/build.gradle
-            echo "Updated Gradle files to use declarative plugin syntax"
+          fi
+          
+          # Fix settings.gradle
+          if grep -q "ext.flutterPluginVersion = 'managed'" settings.gradle; then
+            echo "settings.gradle already uses new plugin management"
+          else
+            echo "Updating settings.gradle to use plugin management"
+            cat > settings.gradle << 'EOL'
+include ':app'
+
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id 'dev.flutter.flutter-plugin-loader' version '1.0.0'
+}
+
+// This file is auto-generated. Do not edit.
+rootProject.name = 'android'
+EOL
           fi
       - name: Get Flutter packages
         script: |
@@ -52,13 +80,41 @@ workflows:
           echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
       - name: Fix Flutter Gradle Plugin Application
         script: |
-          # Update the app build.gradle file to use the declarative plugin syntax
+          # Update both build.gradle and settings.gradle files
           cd "$CM_BUILD_DIR/android"
-          if grep -q "apply from" app/build.gradle; then
-            # Replace apply from with the plugins block
-            sed -i.bak 's/apply from: "$flutterRoot\/packages\/flutter_tools\/gradle\/flutter.gradle"//' app/build.gradle
+          
+          # Fix app/build.gradle
+          if grep -q "apply from:.*flutter.gradle" app/build.gradle; then
+            echo "Updating app/build.gradle to use declarative plugin syntax"
+            # Remove the old apply from line
+            sed -i.bak 's/apply from: ".*flutter.gradle"//' app/build.gradle
+            # Add the Flutter plugin to plugins block
             sed -i.bak '/plugins {/a\\    id "dev.flutter.flutter-gradle-plugin"' app/build.gradle
-            echo "Updated Gradle files to use declarative plugin syntax"
+          fi
+          
+          # Fix settings.gradle
+          if grep -q "ext.flutterPluginVersion = 'managed'" settings.gradle; then
+            echo "settings.gradle already uses new plugin management"
+          else
+            echo "Updating settings.gradle to use plugin management"
+            cat > settings.gradle << 'EOL'
+include ':app'
+
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id 'dev.flutter.flutter-plugin-loader' version '1.0.0'
+}
+
+// This file is auto-generated. Do not edit.
+rootProject.name = 'android'
+EOL
           fi
       - name: Get Flutter packages
         script: |
