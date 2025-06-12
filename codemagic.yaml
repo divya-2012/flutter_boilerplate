@@ -32,24 +32,22 @@ workflows:
             echo "settings.gradle already uses new plugin management"
           else
             echo "Updating settings.gradle to use plugin management"
-            cat > settings.gradle << 'EOL'
-include ':app'
-
-pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-
-plugins {
-    id 'dev.flutter.flutter-plugin-loader' version '1.0.0'
-}
-
-// This file is auto-generated. Do not edit.
-rootProject.name = 'android'
-EOL
+            echo 'include ":app"' > settings.gradle
+            echo >> settings.gradle
+            echo 'pluginManagement {' >> settings.gradle
+            echo '    repositories {' >> settings.gradle
+            echo '        google()' >> settings.gradle
+            echo '        mavenCentral()' >> settings.gradle
+            echo '        gradlePluginPortal()' >> settings.gradle
+            echo '    }' >> settings.gradle
+            echo '}' >> settings.gradle
+            echo >> settings.gradle
+            echo 'plugins {' >> settings.gradle
+            echo '    id "dev.flutter.flutter-plugin-loader" version "1.0.0"' >> settings.gradle
+            echo '}' >> settings.gradle
+            echo >> settings.gradle
+            echo '// This file is auto-generated. Do not edit.' >> settings.gradle
+            echo 'rootProject.name = "android"' >> settings.gradle
           fi
       - name: Get Flutter packages
         script: |
@@ -97,24 +95,22 @@ EOL
             echo "settings.gradle already uses new plugin management"
           else
             echo "Updating settings.gradle to use plugin management"
-            cat > settings.gradle << 'EOL'
-include ':app'
-
-pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-
-plugins {
-    id 'dev.flutter.flutter-plugin-loader' version '1.0.0'
-}
-
-// This file is auto-generated. Do not edit.
-rootProject.name = 'android'
-EOL
+            echo 'include ":app"' > settings.gradle
+            echo >> settings.gradle
+            echo 'pluginManagement {' >> settings.gradle
+            echo '    repositories {' >> settings.gradle
+            echo '        google()' >> settings.gradle
+            echo '        mavenCentral()' >> settings.gradle
+            echo '        gradlePluginPortal()' >> settings.gradle
+            echo '    }' >> settings.gradle
+            echo '}' >> settings.gradle
+            echo >> settings.gradle
+            echo 'plugins {' >> settings.gradle
+            echo '    id "dev.flutter.flutter-plugin-loader" version "1.0.0"' >> settings.gradle
+            echo '}' >> settings.gradle
+            echo >> settings.gradle
+            echo '// This file is auto-generated. Do not edit.' >> settings.gradle
+            echo 'rootProject.name = "android"' >> settings.gradle
           fi
       - name: Get Flutter packages
         script: |
