@@ -39,3 +39,32 @@ workflows:
       - build/**/outputs/**/*.apk
       - build/**/outputs/**/*.aab
       - build/**/outputs/**/mapping.txt
+
+  build-debug-apk:
+    name: Debug APK Build
+    instance_type: mac_mini_m1
+    max_build_duration: 60
+    environment:
+      flutter: stable
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Fix Flutter Gradle Plugin Application
+        script: |
+          # Update the app build.gradle file to use the declarative plugin syntax
+          cd "$CM_BUILD_DIR/android"
+          if grep -q "apply from" app/build.gradle; then
+            # Replace apply from with the plugins block
+            sed -i.bak 's/apply from: "$flutterRoot\/packages\/flutter_tools\/gradle\/flutter.gradle"//' app/build.gradle
+            sed -i.bak '/plugins {/a\\    id "dev.flutter.flutter-gradle-plugin"' app/build.gradle
+            echo "Updated Gradle files to use declarative plugin syntax"
+          fi
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Build Debug APK
+        script: |
+          flutter build apk --debug
+    artifacts:
+      - build/**/outputs/**/*.apk
