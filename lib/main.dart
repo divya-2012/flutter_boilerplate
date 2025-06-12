@@ -1,56 +1,69 @@
-import 'dart:async';
-
-import 'package:dio/dio.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:firebase_performance/firebase_performance.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:get_it/get_it.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
-import 'app.dart';
-import 'env.dart';
-import 'firebase_options.dart';
-import 'utils/http_client.dart';
+import 'firebase_options.dart'; // keep this from your starter pack
 
 void main() async {
-  await runZonedGuarded(
-    () async {
-      final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-      // Retain native splash screen until Dart is ready
-      FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-      GetIt.instance.registerLazySingleton(
-        () => HttpClient(baseOptions: BaseOptions(baseUrl: Env.serverUrl)),
-      );
-      if (!kIsWeb) {
-        if (kDebugMode) {
-          await FirebaseCrashlytics.instance
-              .setCrashlyticsCollectionEnabled(false);
-        } else {
-          await FirebaseCrashlytics.instance
-              .setCrashlyticsCollectionEnabled(true);
-        }
-      }
-      if (kDebugMode) {
-        await FirebasePerformance.instance
-            .setPerformanceCollectionEnabled(false);
-      }
-      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
-
-      ErrorWidget.builder = (FlutterErrorDetails error) {
-        Zone.current.handleUncaughtError(error.exception, error.stack!);
-        return ErrorWidget(error.exception);
-      };
-
-      runApp(const MyApp());
-      FlutterNativeSplash.remove(); // Now remove splash screen
-    },
-    (exception, stackTrace) {
-      FirebaseCrashlytics.instance.recordError(exception, stackTrace);
-    },
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
   );
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'FCM Token Viewer',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const FcmTokenScreen(),
+    );
+  }
+}
+
+class FcmTokenScreen extends StatefulWidget {
+  const FcmTokenScreen({super.key});
+
+  @override
+  State<FcmTokenScreen> createState() => _FcmTokenScreenState();
+}
+
+class _FcmTokenScreenState extends State<FcmTokenScreen> {
+  String? _fcmToken;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFcmToken();
+  }
+
+  Future<void> _loadFcmToken() async {
+    await FirebaseMessaging.instance.requestPermission();
+    final token = await FirebaseMessaging.instance.getToken();
+    setState(() {
+      _fcmToken = token;
+    });
+    print("🔥 FCM Token: $_fcmToken");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("FCM Token")),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SelectableText(
+            _fcmToken ?? 'Fetching FCM token...',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
+      ),
+    );
+  }
 }
